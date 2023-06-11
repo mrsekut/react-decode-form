@@ -9,7 +9,7 @@
 		"jsx": "preserve",
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"types": ["vitest/importMeta", "testing-library__jest-dom"],
+		"types": ["testing-library__jest-dom"],
 
 		"strict": true,
 		"allowUnreachableCode": false,
@@ -23,5 +23,5 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true
 	},
-	"include": ["./src/**/*.ts"]
+	"include": ["src"]
 }
