@@ -2,7 +2,13 @@ import { useCallback, useMemo } from 'react';
 import { SchemaErrors, mapSchemaErrors } from './utils/validation';
 import { getElementValue } from './utils/getElementValue';
 import { Internal } from './utils/field';
-import { FormSchema, DefaultValues, FormValues, ExternalValues } from './types';
+import {
+  FormSchema,
+  DefaultValues,
+  FormValues,
+  ExternalValues,
+  InternalValues,
+} from './types';
 import { i2e, e2i } from './utils/converters';
 import { SetExternalValue, useExternalValues } from './utils/useExternalValues';
 import { useInternalValues } from './utils/useInternalValues';
@@ -16,9 +22,12 @@ export const useForm = <
     defaultValues?: D;
   },
 ): FormReturnType<Schema, D> => {
-  const defaultValues: D = options?.defaultValues ?? {};
-  const [values, setValues] = useInternalValues(defaultValues);
-  const [_exValues, _setOnlyExternalValue] = useExternalValues(schema, values);
+  const defaultValues = options?.defaultValues ?? ({} as D);
+  const [values, setValues] = useInternalValues<Schema, D>(defaultValues);
+  const [_exValues, _setOnlyExternalValue] = useExternalValues<Schema, D>(
+    schema,
+    values,
+  );
 
   const _setOnlyInternalValue: SetValue<Schema> = useCallback(
     name => value => {
@@ -53,7 +62,7 @@ export const useForm = <
   );
 
   const getValue: GetValue<Schema, D> = useCallback(
-    name => values[name as any] as any,
+    name => values[name],
     [values],
   );
 
@@ -65,7 +74,7 @@ export const useForm = <
     return Object.keys(errors).length === 0;
   }, [errors]);
 
-  const register: Register<Schema, D> = useCallback(
+  const register: Register<Schema> = useCallback(
     name => {
       return {
         name,
@@ -121,13 +130,16 @@ export type FormReturnType<
   control: Control<Schema>;
 };
 
+export type FormValuesFromHooks<Fn extends () => FormReturnType<any, any>> =
+  ReturnType<Fn>['values'];
+
 type GetValue<Schema extends FormSchema, D extends DefaultValues<Schema>> = <
   K extends keyof Schema,
 >(
   name: K,
 ) => FormValues<Schema, D>[K];
 
-type Register<Schema extends FormSchema, Name = keyof Schema> = (
+type Register<Schema extends FormSchema> = <Name extends keyof Schema>(
   name: Name,
 ) => {
   name: Name;
@@ -146,5 +158,5 @@ type Control<Schema extends FormSchema> = {
 };
 
 type HandleSubmit<Schema extends FormSchema> = (
-  onValid: (value: ExternalValues<Schema>) => unknown | Promise<unknown>,
+  onValid: (value: InternalValues<Schema>) => unknown | Promise<unknown>,
 ) => (e?: React.BaseSyntheticEvent) => void;

@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import { RecoilRoot } from 'recoil';
-import { useForm } from '.';
+import { FormValuesFromHooks, useForm } from '.';
 import * as z from 'zod';
 import { vi, describe, test, expect, expectTypeOf } from 'vitest';
 import { render, screen, renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ValueObserver } from './utils/observers';
-import { FormSchema, FormValues } from './types';
+import { FormSchema } from './types';
 
 describe('useForm', () => {
   const Internal = z.number().brand<'MM'>();
@@ -224,7 +224,7 @@ describe('useForm with DOM', () => {
     const user = userEvent.setup();
 
     const input = screen.getByRole('textbox');
-    expect(input).toHaveValue(1); // 初期値
+    expect(input).toHaveValue(1); // initial value
 
     await user.clear(input);
     await user.type(input, '2'); // 2m
@@ -350,7 +350,7 @@ describe('useForm with DOM', () => {
     const user = userEvent.setup();
 
     const input = screen.getByRole('textbox');
-    expect(input).toHaveValue(0); // 初期値
+    expect(input).toHaveValue(0); // initial value
 
     await user.click(screen.getByText('set'));
     expect(input).toHaveValue(2);
@@ -378,7 +378,7 @@ describe('useForm with DOM', () => {
     const user = userEvent.setup();
 
     const input = screen.getByRole('textbox');
-    expect(input).toHaveValue(''); // 初期値
+    expect(input).toHaveValue(''); // initial value
 
     await user.type(input, '2');
     expect(input).toHaveValue('2');
@@ -396,14 +396,20 @@ describe('useForm with DOM', () => {
 
     const mockFn = vi.fn();
 
-    const App: React.FC = () => {
-      const { register, handleSubmit } = useForm(schema, {
+    const useWidthForm = () => {
+      return useForm(schema, {
         defaultValues: {
           width: mkInternal(0),
         },
       });
+    };
 
-      const submit = useCallback((value: FormValues<typeof schema>) => {
+    type WidthFormValues = FormValuesFromHooks<typeof useWidthForm>;
+
+    const App: React.FC = () => {
+      const { register, handleSubmit } = useWidthForm();
+
+      const submit = useCallback((value: WidthFormValues) => {
         mockFn(value);
       }, []);
 
@@ -462,7 +468,7 @@ describe('useForm with DOM', () => {
     const user = userEvent.setup();
 
     const checkbox = screen.getByRole('checkbox');
-    expect(checkbox).toBeChecked(); // 初期値
+    expect(checkbox).toBeChecked(); // initial value
     await user.click(checkbox);
 
     expect(checkbox).not.toBeChecked();
