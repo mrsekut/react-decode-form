@@ -1,43 +1,45 @@
 import React from 'react';
-import { RecoilRoot, atom } from 'recoil';
+import { RecoilRoot } from 'recoil';
 import { Controller, useForm } from '.';
 import * as z from 'zod';
 import { vi, describe, test, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RecoilObserver } from './utils/RecoilObserver';
 import { FormSchema } from './useFormForm';
+import { ValueObserver } from './utils/observers';
 
 describe('Controller', () => {
   test('input via Controller', async () => {
     const schema = {
-      name: { in: z.string() },
+      name: {
+        in: z.string(),
+      },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/Controller/1',
-      default: { name: '' },
-    });
-
     const App: React.FC = () => {
-      const { control } = useForm({ state, schema });
+      const { control, values } = useForm(schema, {
+        defaultValues: {
+          name: '',
+        },
+      });
 
       return (
-        <Controller
-          name="name"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <input value={value} onChange={e => onChange(e.target.value)} />
-          )}
-        />
+        <div>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <input value={value} onChange={e => onChange(e.target.value)} />
+            )}
+          />
+          <ValueObserver values={values} onChange={onChange} />
+        </div>
       );
     };
 
     const onChange = vi.fn();
-
     render(
       <RecoilRoot>
-        <RecoilObserver node={state} onChange={onChange} />
         <App />
       </RecoilRoot>,
     );

@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react';
-import { RecoilRoot, atom } from 'recoil';
-import { FormSchema, FormState, useForm } from '.';
+import { RecoilRoot } from 'recoil';
+import { FormSchema, useForm } from '.';
 import * as z from 'zod';
-import { vi, describe, test, expect } from 'vitest';
+import { vi, describe, test, expect, expectTypeOf } from 'vitest';
 import { render, screen, renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RecoilObserver } from './utils/RecoilObserver';
+import { ValueObserver } from './utils/observers';
 
 describe('useForm', () => {
   const Internal = z.number().brand<'MM'>();
@@ -30,14 +30,17 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useForm/getValue/1',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       expect(result.current.values.width).toEqual(1000);
       expect(result.current.getValue('width')).toEqual(1000);
@@ -50,14 +53,17 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useForm/getValue/2',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       expect(result.current.values.width).toEqual(1000);
       expect(result.current.getValue('width')).toEqual(1000);
@@ -75,14 +81,17 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useForm/setValue/1',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       act(() => {
         result.current.setValue('width')(mkInternal(2000));
@@ -98,14 +107,17 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useForm/setValue/2',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       act(() => {
         result.current.setValue('width')(mkInternal(2000));
@@ -115,6 +127,37 @@ describe('useForm', () => {
     });
   });
 
+  test('If the default value is unspecified, the internal data type is T | null', async () => {
+    const schema = {
+      height: {
+        in: z.number(),
+      },
+      width: {
+        in: z.number(),
+      },
+    } satisfies FormSchema;
+
+    const { result } = renderHook(
+      () =>
+        useForm(schema, {
+          defaultValues: {
+            height: 0,
+          },
+        }),
+      {
+        wrapper: RecoilRoot,
+      },
+    );
+
+    const { height, width } = result.current.values;
+    expectTypeOf(height).toEqualTypeOf<number>();
+    expectTypeOf(width).toEqualTypeOf<number | null>();
+
+    const { getValue } = result.current;
+    expectTypeOf(getValue('height')).toEqualTypeOf<number>();
+    expectTypeOf(getValue('width')).toEqualTypeOf<number | null>();
+  });
+
   test('Validation is functioning', async () => {
     const schema = {
       width: {
@@ -122,14 +165,17 @@ describe('useForm', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useForm/validation/1',
-      default: { width: 0 },
-    });
-
-    const { result } = renderHook(() => useForm({ state, schema }), {
-      wrapper: RecoilRoot,
-    });
+    const { result } = renderHook(
+      () =>
+        useForm(schema, {
+          defaultValues: {
+            width: 0,
+          },
+        }),
+      {
+        wrapper: RecoilRoot,
+      },
+    );
 
     expect(result.current.errors.width.message).toEqual(
       'length must be greater than 5',
@@ -159,13 +205,12 @@ describe('useForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useForm/DOM/register/1',
-      default: { width: mkInternal(1000) },
-    });
-
     const App: React.FC = () => {
-      const { register } = useForm({ state, schema });
+      const { register } = useForm(schema, {
+        defaultValues: {
+          width: mkInternal(1000),
+        },
+      });
       return <input role="textbox" {...register('width')} type="number" />;
     };
 
@@ -195,19 +240,22 @@ describe('useForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useForm/DOM/register/2',
-      default: { width: 0 },
-    });
-
     const App: React.FC = () => {
-      const { register } = useForm({ state, schema });
-      return <input role="textbox" {...register('width')} type="number" />;
+      const { register, values } = useForm(schema, {
+        defaultValues: {
+          width: 0,
+        },
+      });
+      return (
+        <div>
+          <input role="textbox" {...register('width')} type="number" />;
+          <ValueObserver values={values} onChange={onChange} />
+        </div>
+      );
     };
 
     render(
       <RecoilRoot>
-        <RecoilObserver node={state} onChange={onChange} />
         <App />
       </RecoilRoot>,
     );
@@ -233,19 +281,22 @@ describe('useForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useForm/DOM/register/3',
-      default: { width: mkInternal(1000) },
-    });
-
     const App: React.FC = () => {
-      const { register } = useForm({ state, schema });
-      return <input role="textbox" {...register('width')} type="number" />;
+      const { register, values } = useForm(schema, {
+        defaultValues: {
+          width: mkInternal(1000),
+        },
+      });
+      return (
+        <div>
+          <input role="textbox" {...register('width')} type="number" />;
+          <ValueObserver values={values} onChange={onChange} />
+        </div>
+      );
     };
 
     render(
       <RecoilRoot>
-        <RecoilObserver node={state} onChange={onChange} />
         <App />
       </RecoilRoot>,
     );
@@ -269,13 +320,12 @@ describe('useForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useForm/DOM/setValue/1',
-      default: { width: mkInternal(0) },
-    });
-
     const App: React.FC = () => {
-      const { register, setValue } = useForm({ state, schema });
+      const { register, setValue } = useForm(schema, {
+        defaultValues: {
+          width: mkInternal(0),
+        },
+      });
 
       return (
         <form>
@@ -305,6 +355,34 @@ describe('useForm with DOM', () => {
     expect(input).toHaveValue(2);
   });
 
+  test('The initial display when the default value is not specified is empty', async () => {
+    const schema = {
+      width: {
+        in: Internal,
+      },
+    } satisfies FormSchema;
+
+    const App: React.FC = () => {
+      const { register } = useForm(schema);
+
+      return <input role="textbox" {...register('width')} />;
+    };
+
+    render(
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>,
+    );
+
+    const user = userEvent.setup();
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveValue(''); // 初期値
+
+    await user.type(input, '2');
+    expect(input).toHaveValue('2');
+  });
+
   test('handleSubmit', async () => {
     const schema = {
       width: {
@@ -315,17 +393,16 @@ describe('useForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useForm/DOM/handleSubmit/1',
-      default: { width: mkInternal(0) },
-    });
-
     const mockFn = vi.fn();
 
     const App: React.FC = () => {
-      const { register, handleSubmit } = useForm({ state, schema });
+      const { register, handleSubmit } = useForm(schema, {
+        defaultValues: {
+          width: mkInternal(0),
+        },
+      });
 
-      const submit = useCallback((value: FormState<typeof schema>) => {
+      const submit = useCallback((value: FormValues<typeof schema>) => {
         mockFn(value);
       }, []);
 
@@ -355,21 +432,28 @@ describe('useForm with DOM', () => {
   test("In the case of checkboxes, it becomes boolean even if 'e2i' is not specified", async () => {
     const onChange = vi.fn();
 
-    const schema = { hasItem: { in: z.boolean() } } satisfies FormSchema;
-
-    const state = atom({
-      key: 'test/useForm/DOM/checkbox/1',
-      default: { hasItem: true },
-    });
+    const schema = {
+      hasItem: {
+        in: z.boolean(),
+      },
+    } satisfies FormSchema;
 
     const App: React.FC = () => {
-      const { register } = useForm({ state, schema });
-      return <input {...register('hasItem')} type="checkbox" />;
+      const { register, values } = useForm(schema, {
+        defaultValues: {
+          hasItem: true,
+        },
+      });
+      return (
+        <div>
+          <input {...register('hasItem')} type="checkbox" />;
+          <ValueObserver values={values} onChange={onChange} />
+        </div>
+      );
     };
 
     render(
       <RecoilRoot>
-        <RecoilObserver node={state} onChange={onChange} />
         <App />
       </RecoilRoot>,
     );

@@ -1,9 +1,9 @@
 import * as z from 'zod';
-import { FormState, FormSchema, SchemaErrors } from './useFormForm';
+import { FormSchema, PickExternalValues, SchemaErrors } from '../useFormForm';
 
 /** @package */
 export const mapSchemaErrors = <Schema extends FormSchema>(
-  values: FormState<Schema>,
+  values: PickExternalValues<Schema>,
   schema: Schema,
 ): SchemaErrors<Schema> => {
   return Object.keys(values).reduce((acc, key) => {
