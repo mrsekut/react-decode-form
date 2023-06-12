@@ -1,9 +1,16 @@
 import * as z from 'zod';
-import { FormState, FormSchema, SchemaErrors } from './useDecodeForm';
+import { ExternalValues, FormSchema, InternalValues } from '../types';
+
+/** @package */
+export type SchemaErrors<Schema extends InternalValues<FormSchema>> = {
+  [K in keyof Schema]: {
+    message: string | undefined;
+  };
+};
 
 /** @package */
 export const mapSchemaErrors = <Schema extends FormSchema>(
-  values: FormState<Schema>,
+  values: ExternalValues<Schema>,
   schema: Schema,
 ): SchemaErrors<Schema> => {
   return Object.keys(values).reduce((acc, key) => {

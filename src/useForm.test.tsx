@@ -1,13 +1,14 @@
 import React, { useCallback } from 'react';
-import { RecoilRoot, atom } from 'recoil';
-import { FormSchema, FormState, useDecodeForm } from '.';
+import { RecoilRoot } from 'recoil';
+import { FormValuesFromHooks, useForm } from '.';
 import * as z from 'zod';
-import { vi, describe, test, expect } from 'vitest';
+import { vi, describe, test, expect, expectTypeOf } from 'vitest';
 import { render, screen, renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RecoilObserver } from './utils/RecoilObserver';
+import { ValueObserver } from './utils/observers';
+import { FormSchema } from './types';
 
-describe('useDecodeForm', () => {
+describe('useForm', () => {
   const Internal = z.number().brand<'MM'>();
   type Internal = z.infer<typeof Internal>;
   const mkInternal = (mm: number) => Internal.parse(mm);
@@ -30,14 +31,17 @@ describe('useDecodeForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useDecodeForm/getValue/1',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       expect(result.current.values.width).toEqual(1000);
       expect(result.current.getValue('width')).toEqual(1000);
@@ -50,14 +54,17 @@ describe('useDecodeForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useDecodeForm/getValue/2',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       expect(result.current.values.width).toEqual(1000);
       expect(result.current.getValue('width')).toEqual(1000);
@@ -75,14 +82,17 @@ describe('useDecodeForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useDecodeForm/setValue/1',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       act(() => {
         result.current.setValue('width')(mkInternal(2000));
@@ -98,14 +108,17 @@ describe('useDecodeForm', () => {
         },
       } satisfies FormSchema;
 
-      const state = atom({
-        key: 'test/useDecodeForm/setValue/2',
-        default: { width: mkInternal(1000) },
-      });
-
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
-        wrapper: RecoilRoot,
-      });
+      const { result } = renderHook(
+        () =>
+          useForm(schema, {
+            defaultValues: {
+              width: mkInternal(1000),
+            },
+          }),
+        {
+          wrapper: RecoilRoot,
+        },
+      );
 
       act(() => {
         result.current.setValue('width')(mkInternal(2000));
@@ -115,6 +128,37 @@ describe('useDecodeForm', () => {
     });
   });
 
+  test('If the default value is unspecified, the internal data type is T | null', async () => {
+    const schema = {
+      height: {
+        in: z.number(),
+      },
+      width: {
+        in: z.number(),
+      },
+    } satisfies FormSchema;
+
+    const { result } = renderHook(
+      () =>
+        useForm(schema, {
+          defaultValues: {
+            height: 0,
+          },
+        }),
+      {
+        wrapper: RecoilRoot,
+      },
+    );
+
+    const { height, width } = result.current.values;
+    expectTypeOf(height).toEqualTypeOf<number>();
+    expectTypeOf(width).toEqualTypeOf<number | null>();
+
+    const { getValue } = result.current;
+    expectTypeOf(getValue('height')).toEqualTypeOf<number>();
+    expectTypeOf(getValue('width')).toEqualTypeOf<number | null>();
+  });
+
   test('Validation is functioning', async () => {
     const schema = {
       width: {
@@ -122,14 +166,17 @@ describe('useDecodeForm', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useDecodeForm/validation/1',
-      default: { width: 0 },
-    });
-
-    const { result } = renderHook(() => useDecodeForm({ state, schema }), {
-      wrapper: RecoilRoot,
-    });
+    const { result } = renderHook(
+      () =>
+        useForm(schema, {
+          defaultValues: {
+            width: 0,
+          },
+        }),
+      {
+        wrapper: RecoilRoot,
+      },
+    );
 
     expect(result.current.errors.width.message).toEqual(
       'length must be greater than 5',
@@ -137,7 +184,7 @@ describe('useDecodeForm', () => {
   });
 });
 
-describe('useDecodeForm with DOM', () => {
+describe('useForm with DOM', () => {
   const Internal = z.number().brand<'MM'>();
   type Internal = z.infer<typeof Internal>;
   const mkInternal = (mm: number) => Internal.parse(mm);
@@ -159,13 +206,12 @@ describe('useDecodeForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useDecodeForm/DOM/register/1',
-      default: { width: mkInternal(1000) },
-    });
-
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
+      const { register } = useForm(schema, {
+        defaultValues: {
+          width: mkInternal(1000),
+        },
+      });
       return <input role="textbox" {...register('width')} type="number" />;
     };
 
@@ -178,7 +224,7 @@ describe('useDecodeForm with DOM', () => {
     const user = userEvent.setup();
 
     const input = screen.getByRole('textbox');
-    expect(input).toHaveValue(1); // 初期値
+    expect(input).toHaveValue(1); // initial value
 
     await user.clear(input);
     await user.type(input, '2'); // 2m
@@ -195,19 +241,22 @@ describe('useDecodeForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useDecodeForm/DOM/register/2',
-      default: { width: 0 },
-    });
-
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
-      return <input role="textbox" {...register('width')} type="number" />;
+      const { register, values } = useForm(schema, {
+        defaultValues: {
+          width: 0,
+        },
+      });
+      return (
+        <div>
+          <input role="textbox" {...register('width')} type="number" />;
+          <ValueObserver values={values} onChange={onChange} />
+        </div>
+      );
     };
 
     render(
       <RecoilRoot>
-        <RecoilObserver node={state} onChange={onChange} />
         <App />
       </RecoilRoot>,
     );
@@ -233,19 +282,22 @@ describe('useDecodeForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useDecodeForm/DOM/register/3',
-      default: { width: mkInternal(1000) },
-    });
-
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
-      return <input role="textbox" {...register('width')} type="number" />;
+      const { register, values } = useForm(schema, {
+        defaultValues: {
+          width: mkInternal(1000),
+        },
+      });
+      return (
+        <div>
+          <input role="textbox" {...register('width')} type="number" />;
+          <ValueObserver values={values} onChange={onChange} />
+        </div>
+      );
     };
 
     render(
       <RecoilRoot>
-        <RecoilObserver node={state} onChange={onChange} />
         <App />
       </RecoilRoot>,
     );
@@ -269,13 +321,12 @@ describe('useDecodeForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useDecodeForm/DOM/setValue/1',
-      default: { width: mkInternal(0) },
-    });
-
     const App: React.FC = () => {
-      const { register, setValue } = useDecodeForm({ state, schema });
+      const { register, setValue } = useForm(schema, {
+        defaultValues: {
+          width: mkInternal(0),
+        },
+      });
 
       return (
         <form>
@@ -299,10 +350,38 @@ describe('useDecodeForm with DOM', () => {
     const user = userEvent.setup();
 
     const input = screen.getByRole('textbox');
-    expect(input).toHaveValue(0); // 初期値
+    expect(input).toHaveValue(0); // initial value
 
     await user.click(screen.getByText('set'));
     expect(input).toHaveValue(2);
+  });
+
+  test('The initial display when the default value is not specified is empty', async () => {
+    const schema = {
+      width: {
+        in: Internal,
+      },
+    } satisfies FormSchema;
+
+    const App: React.FC = () => {
+      const { register } = useForm(schema);
+
+      return <input role="textbox" {...register('width')} />;
+    };
+
+    render(
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>,
+    );
+
+    const user = userEvent.setup();
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveValue(''); // initial value
+
+    await user.type(input, '2');
+    expect(input).toHaveValue('2');
   });
 
   test('handleSubmit', async () => {
@@ -315,17 +394,22 @@ describe('useDecodeForm with DOM', () => {
       },
     } satisfies FormSchema;
 
-    const state = atom({
-      key: 'test/useDecodeForm/DOM/handleSubmit/1',
-      default: { width: mkInternal(0) },
-    });
-
     const mockFn = vi.fn();
 
-    const App: React.FC = () => {
-      const { register, handleSubmit } = useDecodeForm({ state, schema });
+    const useWidthForm = () => {
+      return useForm(schema, {
+        defaultValues: {
+          width: mkInternal(0),
+        },
+      });
+    };
 
-      const submit = useCallback((value: FormState<typeof schema>) => {
+    type WidthFormValues = FormValuesFromHooks<typeof useWidthForm>;
+
+    const App: React.FC = () => {
+      const { register, handleSubmit } = useWidthForm();
+
+      const submit = useCallback((value: WidthFormValues) => {
         mockFn(value);
       }, []);
 
@@ -355,21 +439,28 @@ describe('useDecodeForm with DOM', () => {
   test("In the case of checkboxes, it becomes boolean even if 'e2i' is not specified", async () => {
     const onChange = vi.fn();
 
-    const schema = { hasItem: { in: z.boolean() } } satisfies FormSchema;
-
-    const state = atom({
-      key: 'test/useDecodeForm/DOM/checkbox/1',
-      default: { hasItem: true },
-    });
+    const schema = {
+      hasItem: {
+        in: z.boolean(),
+      },
+    } satisfies FormSchema;
 
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
-      return <input {...register('hasItem')} type="checkbox" />;
+      const { register, values } = useForm(schema, {
+        defaultValues: {
+          hasItem: true,
+        },
+      });
+      return (
+        <div>
+          <input {...register('hasItem')} type="checkbox" />;
+          <ValueObserver values={values} onChange={onChange} />
+        </div>
+      );
     };
 
     render(
       <RecoilRoot>
-        <RecoilObserver node={state} onChange={onChange} />
         <App />
       </RecoilRoot>,
     );
@@ -377,7 +468,7 @@ describe('useDecodeForm with DOM', () => {
     const user = userEvent.setup();
 
     const checkbox = screen.getByRole('checkbox');
-    expect(checkbox).toBeChecked(); // 初期値
+    expect(checkbox).toBeChecked(); // initial value
     await user.click(checkbox);
 
     expect(checkbox).not.toBeChecked();
