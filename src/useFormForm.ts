@@ -1,20 +1,15 @@
 import { useCallback, useMemo, useState } from 'react';
 import { atomFamily, useRecoilState } from 'recoil';
-import * as z from 'zod';
 import { mapSchemaErrors } from './utils/validation';
 import { getElementValue } from './utils/getElementValue';
-import { Field, Internal, hasExternal, External } from './utils/field';
-
-export type FormSchema = Record<string, Field<z.ZodType>>;
-
-export type FormValues<
-  Schema extends FormSchema,
-  D extends DefaultValues<Schema>,
-> = {
-  [Key in keyof Schema]: Key extends keyof D
-    ? Internal<Schema[Key]>
-    : Internal<Schema[Key]> | null;
-};
+import { Internal, hasExternal, External } from './utils/field';
+import {
+  FormSchema,
+  DefaultValues,
+  FormValues,
+  ExternalValues,
+  InternalValues,
+} from './types';
 
 export const useForm = <
   Schema extends FormSchema,
@@ -155,28 +150,16 @@ type _SetExternalValue<Schema extends FormSchema> = (
 ) => void;
 
 type Control<Schema extends FormSchema> = {
-  _exValues: PickExternalValues<Schema>;
+  _exValues: ExternalValues<Schema>;
   _setExternalValue: _SetExternalValue<Schema>;
 };
 
 type HandleSubmit<Schema extends FormSchema> = (
-  onValid: (value: PickExternalValues<Schema>) => unknown | Promise<unknown>,
+  onValid: (value: ExternalValues<Schema>) => unknown | Promise<unknown>,
 ) => (e?: React.BaseSyntheticEvent) => void;
-
-type DefaultValues<Schema extends FormSchema> = Partial<
-  PickInternalValues<Schema>
->;
 
 // Field
 // ================================
-type PickInternalValues<Schema extends FormSchema> = {
-  [K in keyof Schema]: Internal<Schema[K]>;
-};
-
-/** @package */
-export type PickExternalValues<Schema extends FormSchema> = {
-  [K in keyof Schema]: External<Schema[K]>;
-};
 
 // TODO: type
 const e2i =
@@ -224,7 +207,7 @@ const i2es = <Schema extends FormSchema, D extends DefaultValues<Schema>>(
 
 // validation
 // ================================
-export type SchemaErrors<Schema extends PickInternalValues<FormSchema>> = {
+export type SchemaErrors<Schema extends InternalValues<FormSchema>> = {
   [K in keyof Schema]: {
     message: string | undefined;
   };
@@ -254,7 +237,7 @@ const useExternalValue = <
   schema: Schema,
   values: FormValues<Schema, D>,
 ) => {
-  const [_exValues, _setExValues] = useState<PickExternalValues<Schema>>(
+  const [_exValues, _setExValues] = useState<ExternalValues<Schema>>(
     i2es(values, schema),
   );
 

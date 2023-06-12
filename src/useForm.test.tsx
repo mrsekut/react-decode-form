@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
 import { RecoilRoot } from 'recoil';
-import { FormSchema, useForm } from '.';
+import { useForm } from '.';
 import * as z from 'zod';
 import { vi, describe, test, expect, expectTypeOf } from 'vitest';
 import { render, screen, renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ValueObserver } from './utils/observers';
+import { FormSchema, FormValues } from './types';
 
 describe('useForm', () => {
   const Internal = z.number().brand<'MM'>();
