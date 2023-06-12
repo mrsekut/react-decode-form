@@ -3,6 +3,7 @@ import { atomFamily, useRecoilState } from 'recoil';
 import * as z from 'zod';
 import { mapSchemaErrors } from './utils/validation';
 import { getElementValue } from './utils/getElementValue';
+import { Field, Internal, hasExternal, External } from './utils/field';
 
 export type FormSchema = Record<string, Field<z.ZodType>>;
 
@@ -175,38 +176,6 @@ type PickInternalValues<Schema extends FormSchema> = {
 /** @package */
 export type PickExternalValues<Schema extends FormSchema> = {
   [K in keyof Schema]: External<Schema[K]>;
-};
-
-type Field<I extends z.ZodType, E extends z.ZodType = I> =
-  | InternalOnly<I>
-  | WithExternal<I, E>;
-type InternalOnly<I extends z.ZodType> = {
-  in: I;
-  e2i?: (ex: string | boolean) => z.output<I>;
-};
-type WithExternal<I extends z.ZodType, E extends z.ZodType = I> = {
-  in: I;
-  ex: E;
-  i2e: (in_: z.output<I>) => z.input<E>;
-  e2i: (ex: z.input<E>) => z.output<I>;
-};
-
-// prettier-ignore
-type External<F extends Field<z.ZodType>>
-  = F extends WithExternal<infer _I, infer E>
-    ? z.input<E>
-    : z.output<F['in']>;
-
-type Internal<F extends Field<z.ZodType>> = z.output<F['in']>;
-
-const hasExternal = <I extends z.ZodType, E extends z.ZodType>(
-  field: Field<I, E>,
-): field is WithExternal<I, E> => {
-  return (
-    Object.hasOwn(field, 'ex') &&
-    Object.hasOwn(field, 'i2e') &&
-    Object.hasOwn(field, 'e2i')
-  );
 };
 
 // TODO: type
