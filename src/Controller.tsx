@@ -1,4 +1,4 @@
-import { FormSchema, FormState, _SetExternalValue } from './useDecodeForm';
+import { FormSchema, FormState, _SetExternalValue } from './useFormForm';
 
 type Props<Schema extends FormSchema> = {
   name: keyof Schema;

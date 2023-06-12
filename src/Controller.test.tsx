@@ -1,12 +1,12 @@
 import React from 'react';
 import { RecoilRoot, atom } from 'recoil';
-import { Controller, useDecodeForm } from '.';
+import { Controller, useForm } from '.';
 import * as z from 'zod';
 import { vi, describe, test, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RecoilObserver } from './utils/RecoilObserver';
-import { FormSchema } from './useDecodeForm';
+import { FormSchema } from './useFormForm';
 
 describe('Controller', () => {
   test('input via Controller', async () => {
@@ -20,7 +20,7 @@ describe('Controller', () => {
     });
 
     const App: React.FC = () => {
-      const { control } = useDecodeForm({ state, schema });
+      const { control } = useForm({ state, schema });
 
       return (
         <Controller

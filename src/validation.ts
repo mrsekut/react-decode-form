@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import { FormState, FormSchema, SchemaErrors } from './useDecodeForm';
+import { FormState, FormSchema, SchemaErrors } from './useFormForm';
 
 /** @package */
 export const mapSchemaErrors = <Schema extends FormSchema>(

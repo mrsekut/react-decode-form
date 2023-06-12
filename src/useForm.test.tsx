@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import { RecoilRoot, atom } from 'recoil';
-import { FormSchema, FormState, useDecodeForm } from '.';
+import { FormSchema, FormState, useForm } from '.';
 import * as z from 'zod';
 import { vi, describe, test, expect } from 'vitest';
 import { render, screen, renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RecoilObserver } from './utils/RecoilObserver';
 
-describe('useDecodeForm', () => {
+describe('useForm', () => {
   const Internal = z.number().brand<'MM'>();
   type Internal = z.infer<typeof Internal>;
   const mkInternal = (mm: number) => Internal.parse(mm);
@@ -31,11 +31,11 @@ describe('useDecodeForm', () => {
       } satisfies FormSchema;
 
       const state = atom({
-        key: 'test/useDecodeForm/getValue/1',
+        key: 'test/useForm/getValue/1',
         default: { width: mkInternal(1000) },
       });
 
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
+      const { result } = renderHook(() => useForm({ state, schema }), {
         wrapper: RecoilRoot,
       });
 
@@ -51,11 +51,11 @@ describe('useDecodeForm', () => {
       } satisfies FormSchema;
 
       const state = atom({
-        key: 'test/useDecodeForm/getValue/2',
+        key: 'test/useForm/getValue/2',
         default: { width: mkInternal(1000) },
       });
 
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
+      const { result } = renderHook(() => useForm({ state, schema }), {
         wrapper: RecoilRoot,
       });
 
@@ -76,11 +76,11 @@ describe('useDecodeForm', () => {
       } satisfies FormSchema;
 
       const state = atom({
-        key: 'test/useDecodeForm/setValue/1',
+        key: 'test/useForm/setValue/1',
         default: { width: mkInternal(1000) },
       });
 
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
+      const { result } = renderHook(() => useForm({ state, schema }), {
         wrapper: RecoilRoot,
       });
 
@@ -99,11 +99,11 @@ describe('useDecodeForm', () => {
       } satisfies FormSchema;
 
       const state = atom({
-        key: 'test/useDecodeForm/setValue/2',
+        key: 'test/useForm/setValue/2',
         default: { width: mkInternal(1000) },
       });
 
-      const { result } = renderHook(() => useDecodeForm({ state, schema }), {
+      const { result } = renderHook(() => useForm({ state, schema }), {
         wrapper: RecoilRoot,
       });
 
@@ -123,11 +123,11 @@ describe('useDecodeForm', () => {
     } satisfies FormSchema;
 
     const state = atom({
-      key: 'test/useDecodeForm/validation/1',
+      key: 'test/useForm/validation/1',
       default: { width: 0 },
     });
 
-    const { result } = renderHook(() => useDecodeForm({ state, schema }), {
+    const { result } = renderHook(() => useForm({ state, schema }), {
       wrapper: RecoilRoot,
     });
 
@@ -137,7 +137,7 @@ describe('useDecodeForm', () => {
   });
 });
 
-describe('useDecodeForm with DOM', () => {
+describe('useForm with DOM', () => {
   const Internal = z.number().brand<'MM'>();
   type Internal = z.infer<typeof Internal>;
   const mkInternal = (mm: number) => Internal.parse(mm);
@@ -160,12 +160,12 @@ describe('useDecodeForm with DOM', () => {
     } satisfies FormSchema;
 
     const state = atom({
-      key: 'test/useDecodeForm/DOM/register/1',
+      key: 'test/useForm/DOM/register/1',
       default: { width: mkInternal(1000) },
     });
 
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
+      const { register } = useForm({ state, schema });
       return <input role="textbox" {...register('width')} type="number" />;
     };
 
@@ -196,12 +196,12 @@ describe('useDecodeForm with DOM', () => {
     } satisfies FormSchema;
 
     const state = atom({
-      key: 'test/useDecodeForm/DOM/register/2',
+      key: 'test/useForm/DOM/register/2',
       default: { width: 0 },
     });
 
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
+      const { register } = useForm({ state, schema });
       return <input role="textbox" {...register('width')} type="number" />;
     };
 
@@ -234,12 +234,12 @@ describe('useDecodeForm with DOM', () => {
     } satisfies FormSchema;
 
     const state = atom({
-      key: 'test/useDecodeForm/DOM/register/3',
+      key: 'test/useForm/DOM/register/3',
       default: { width: mkInternal(1000) },
     });
 
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
+      const { register } = useForm({ state, schema });
       return <input role="textbox" {...register('width')} type="number" />;
     };
 
@@ -270,12 +270,12 @@ describe('useDecodeForm with DOM', () => {
     } satisfies FormSchema;
 
     const state = atom({
-      key: 'test/useDecodeForm/DOM/setValue/1',
+      key: 'test/useForm/DOM/setValue/1',
       default: { width: mkInternal(0) },
     });
 
     const App: React.FC = () => {
-      const { register, setValue } = useDecodeForm({ state, schema });
+      const { register, setValue } = useForm({ state, schema });
 
       return (
         <form>
@@ -316,14 +316,14 @@ describe('useDecodeForm with DOM', () => {
     } satisfies FormSchema;
 
     const state = atom({
-      key: 'test/useDecodeForm/DOM/handleSubmit/1',
+      key: 'test/useForm/DOM/handleSubmit/1',
       default: { width: mkInternal(0) },
     });
 
     const mockFn = vi.fn();
 
     const App: React.FC = () => {
-      const { register, handleSubmit } = useDecodeForm({ state, schema });
+      const { register, handleSubmit } = useForm({ state, schema });
 
       const submit = useCallback((value: FormState<typeof schema>) => {
         mockFn(value);
@@ -358,12 +358,12 @@ describe('useDecodeForm with DOM', () => {
     const schema = { hasItem: { in: z.boolean() } } satisfies FormSchema;
 
     const state = atom({
-      key: 'test/useDecodeForm/DOM/checkbox/1',
+      key: 'test/useForm/DOM/checkbox/1',
       default: { hasItem: true },
     });
 
     const App: React.FC = () => {
-      const { register } = useDecodeForm({ state, schema });
+      const { register } = useForm({ state, schema });
       return <input {...register('hasItem')} type="checkbox" />;
     };
 

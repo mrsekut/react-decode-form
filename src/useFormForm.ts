@@ -16,12 +16,12 @@ type Options<Schema extends FormSchema> = {
   schema: Schema;
 };
 
-export const useDecodeForm = <Schema extends FormSchema>(
+export const useForm = <Schema extends FormSchema>(
   ops: Options<Schema>,
 ): FormReturnType<Schema> => {
   const { state, schema } = ops;
   const values = useRecoilValue(state);
-  const { _exValues, _setOnlyExternalValue } = useInternalValue(schema, values);
+  const { _exValues, _setOnlyExternalValue } = useExternalValue(schema, values);
 
   const _setOnlyInternalValue: SetValue<Schema> = useRecoilCallback(
     ({ set }) =>
@@ -243,9 +243,18 @@ const i2es = <Schema extends FormSchema>(
   }, {} as FormState<Schema>);
 };
 
-// Internal hooks
+// Utils
 // ================================
-const useInternalValue = <Schema extends FormSchema>(
+
+const getElementValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.type === 'checkbox') {
+    return e.target.checked;
+  }
+
+  return e.target.value;
+};
+
+const useExternalValue = <Schema extends FormSchema>(
   schema: Schema,
   values: FormState<Schema>,
 ) => {
@@ -262,15 +271,4 @@ const useInternalValue = <Schema extends FormSchema>(
     _exValues,
     _setOnlyExternalValue,
   };
-};
-
-// Utils
-// ================================
-
-const getElementValue = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.type === 'checkbox') {
-    return e.target.checked;
-  }
-
-  return e.target.value;
 };
