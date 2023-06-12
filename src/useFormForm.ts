@@ -1,16 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
-import { atomFamily, useRecoilState } from 'recoil';
-import { mapSchemaErrors } from './utils/validation';
+import { useCallback, useMemo } from 'react';
+import { SchemaErrors, mapSchemaErrors } from './utils/validation';
 import { getElementValue } from './utils/getElementValue';
 import { Internal } from './utils/field';
-import {
-  FormSchema,
-  DefaultValues,
-  FormValues,
-  ExternalValues,
-  InternalValues,
-} from './types';
-import { i2e, e2i, i2es } from './utils/converters';
+import { FormSchema, DefaultValues, FormValues, ExternalValues } from './types';
+import { i2e, e2i } from './utils/converters';
+import { SetExternalValue, useExternalValues } from './utils/useExternalValues';
+import { useInternalValues } from './utils/useInternalValues';
 
 export const useForm = <
   Schema extends FormSchema,
@@ -22,8 +17,8 @@ export const useForm = <
   },
 ): FormReturnType<Schema, D> => {
   const defaultValues: D = options?.defaultValues ?? {};
-  const [values, setValues] = useInternalValue(defaultValues);
-  const { _exValues, _setOnlyExternalValue } = useExternalValue(schema, values);
+  const [values, setValues] = useInternalValues(defaultValues);
+  const [_exValues, _setOnlyExternalValue] = useExternalValues(schema, values);
 
   const _setOnlyInternalValue: SetValue<Schema> = useCallback(
     name => value => {
@@ -49,7 +44,7 @@ export const useForm = <
   );
 
   // args is External
-  const _setExternalValue: _SetExternalValue<Schema> = useCallback(
+  const _setExternalValue: SetExternalValue<Schema> = useCallback(
     (name, exValue) => {
       _setOnlyExternalValue(name as string, exValue);
       setValue(name)(e2i(schema)(name, exValue));
@@ -145,65 +140,11 @@ type SetValue<Schema extends FormSchema> = <Key extends keyof Schema>(
   name: Key,
 ) => (value: Internal<Schema[Key]>) => void;
 
-type _SetExternalValue<Schema extends FormSchema> = (
-  name: keyof Schema,
-  exValue: string | boolean,
-) => void;
-
 type Control<Schema extends FormSchema> = {
   _exValues: ExternalValues<Schema>;
-  _setExternalValue: _SetExternalValue<Schema>;
+  _setExternalValue: SetExternalValue<Schema>;
 };
 
 type HandleSubmit<Schema extends FormSchema> = (
   onValid: (value: ExternalValues<Schema>) => unknown | Promise<unknown>,
 ) => (e?: React.BaseSyntheticEvent) => void;
-
-// validation
-// ================================
-export type SchemaErrors<Schema extends InternalValues<FormSchema>> = {
-  [K in keyof Schema]: {
-    message: string | undefined;
-  };
-};
-
-// Utils
-// ================================
-
-const useInternalValue = <
-  Schema extends FormSchema,
-  D extends DefaultValues<Schema>,
->(
-  defaultValues: D,
-) => {
-  return useRecoilState<FormValues<Schema, D>>(createAtom(defaultValues));
-};
-
-const createAtom = atomFamily({
-  key: 'form values',
-  default: values => values as any,
-});
-
-const useExternalValue = <
-  Schema extends FormSchema,
-  D extends DefaultValues<Schema>,
->(
-  schema: Schema,
-  values: FormValues<Schema, D>,
-) => {
-  const [_exValues, _setExValues] = useState<ExternalValues<Schema>>(
-    i2es(values, schema),
-  );
-
-  const _setOnlyExternalValue: _SetExternalValue<Schema> = useCallback(
-    (name, exValue) => {
-      _setExValues(s => ({ ...s, [name]: exValue }));
-    },
-    [],
-  );
-
-  return {
-    _exValues,
-    _setOnlyExternalValue,
-  };
-};

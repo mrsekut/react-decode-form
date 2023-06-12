@@ -1,4 +1,9 @@
-import { FormSchema, DefaultValues, FormValues } from '../types';
+import {
+  FormSchema,
+  DefaultValues,
+  FormValues,
+  ExternalValues,
+} from '../types';
 import { Internal, External, hasExternal } from './field';
 
 // TODO: type
@@ -25,13 +30,13 @@ export const i2es = <
 >(
   internalValues: FormValues<Schema, D>,
   schema: Schema,
-) => {
+): ExternalValues<Schema> => {
   return Object.keys(internalValues).reduce((acc, key) => {
     return {
       ...acc,
       [key]: i2e(schema)(key, internalValues[key]),
     };
-  }, {} as FormValues<Schema, D>);
+  }, {} as ExternalValues<Schema>);
 };
 
 /** @pacakge */

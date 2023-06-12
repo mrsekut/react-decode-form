@@ -5,8 +5,8 @@ import * as z from 'zod';
 import { vi, describe, test, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { FormSchema } from './useFormForm';
 import { ValueObserver } from './utils/observers';
+import { FormSchema } from './types';
 
 describe('Controller', () => {
   test('input via Controller', async () => {

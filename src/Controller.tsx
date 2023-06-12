@@ -1,10 +1,11 @@
-import { FormSchema, FormState, _SetExternalValue } from './useFormForm';
+import { ExternalValues, FormSchema } from './types';
+import { SetExternalValue } from './utils/useExternalValues';
 
 type Props<Schema extends FormSchema> = {
   name: keyof Schema;
   control: {
-    _exValues: FormState<Schema>;
-    _setExternalValue: _SetExternalValue<Schema>;
+    _exValues: ExternalValues<Schema>;
+    _setExternalValue: SetExternalValue<Schema>;
   };
   render: (props: {
     field: {
