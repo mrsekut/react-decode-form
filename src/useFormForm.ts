@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { atomFamily, useRecoilState } from 'recoil';
 import { mapSchemaErrors } from './utils/validation';
 import { getElementValue } from './utils/getElementValue';
-import { Internal, hasExternal, External } from './utils/field';
+import { Internal } from './utils/field';
 import {
   FormSchema,
   DefaultValues,
@@ -10,6 +10,7 @@ import {
   ExternalValues,
   InternalValues,
 } from './types';
+import { i2e, e2i, i2es } from './utils/converters';
 
 export const useForm = <
   Schema extends FormSchema,
@@ -157,53 +158,6 @@ type Control<Schema extends FormSchema> = {
 type HandleSubmit<Schema extends FormSchema> = (
   onValid: (value: ExternalValues<Schema>) => unknown | Promise<unknown>,
 ) => (e?: React.BaseSyntheticEvent) => void;
-
-// Field
-// ================================
-
-// TODO: type
-const e2i =
-  <Schema extends FormSchema, Name extends keyof Schema>(schema: Schema) =>
-  (name: Name, value: string | boolean): External<Schema[Name]> => {
-    const field = schema[name];
-    if (field == null) {
-      throw new Error(`schema[name] is not defined`);
-    }
-
-    if (field.e2i != null) {
-      return field.e2i(value);
-    } else {
-      return value as External<Schema[Name]>;
-    }
-  };
-
-const i2e =
-  <Schema extends FormSchema, Name extends keyof Schema>(schema: Schema) =>
-  (name: Name, value: Internal<Schema[Name]>): string => {
-    const field = schema[name];
-    if (field == null) {
-      return '';
-    }
-
-    if (hasExternal(field)) {
-      return field.i2e(value);
-    } else {
-      return value as string;
-    }
-  };
-
-const i2es = <Schema extends FormSchema, D extends DefaultValues<Schema>>(
-  internalValues: FormValues<Schema, D>,
-  schema: Schema,
-) => {
-  return Object.keys(internalValues).reduce((acc, key) => {
-    const value = internalValues[key] as Internal<Schema[typeof key]>;
-    return {
-      ...acc,
-      [key]: i2e(schema)(key, value),
-    };
-  }, {} as FormValues<Schema, D>);
-};
 
 // validation
 // ================================
