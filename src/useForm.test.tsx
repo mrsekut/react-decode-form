@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { RecoilRoot } from 'recoil';
 import { FormValuesFromHooks, useForm } from '.';
 import * as z from 'zod';
 import { vi, describe, test, expect, expectTypeOf } from 'vitest';
@@ -31,16 +30,12 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const { result } = renderHook(
-        () =>
-          useForm(schema, {
-            defaultValues: {
-              width: mkInternal(1000),
-            },
-          }),
-        {
-          wrapper: RecoilRoot,
-        },
+      const { result } = renderHook(() =>
+        useForm(schema, {
+          defaultValues: {
+            width: mkInternal(1000),
+          },
+        }),
       );
 
       expect(result.current.values.width).toEqual(1000);
@@ -54,16 +49,12 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const { result } = renderHook(
-        () =>
-          useForm(schema, {
-            defaultValues: {
-              width: mkInternal(1000),
-            },
-          }),
-        {
-          wrapper: RecoilRoot,
-        },
+      const { result } = renderHook(() =>
+        useForm(schema, {
+          defaultValues: {
+            width: mkInternal(1000),
+          },
+        }),
       );
 
       expect(result.current.values.width).toEqual(1000);
@@ -82,16 +73,12 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const { result } = renderHook(
-        () =>
-          useForm(schema, {
-            defaultValues: {
-              width: mkInternal(1000),
-            },
-          }),
-        {
-          wrapper: RecoilRoot,
-        },
+      const { result } = renderHook(() =>
+        useForm(schema, {
+          defaultValues: {
+            width: mkInternal(1000),
+          },
+        }),
       );
 
       act(() => {
@@ -108,16 +95,12 @@ describe('useForm', () => {
         },
       } satisfies FormSchema;
 
-      const { result } = renderHook(
-        () =>
-          useForm(schema, {
-            defaultValues: {
-              width: mkInternal(1000),
-            },
-          }),
-        {
-          wrapper: RecoilRoot,
-        },
+      const { result } = renderHook(() =>
+        useForm(schema, {
+          defaultValues: {
+            width: mkInternal(1000),
+          },
+        }),
       );
 
       act(() => {
@@ -138,16 +121,12 @@ describe('useForm', () => {
       },
     } satisfies FormSchema;
 
-    const { result } = renderHook(
-      () =>
-        useForm(schema, {
-          defaultValues: {
-            height: 0,
-          },
-        }),
-      {
-        wrapper: RecoilRoot,
-      },
+    const { result } = renderHook(() =>
+      useForm(schema, {
+        defaultValues: {
+          height: 0,
+        },
+      }),
     );
 
     const { height, width } = result.current.values;
@@ -166,16 +145,12 @@ describe('useForm', () => {
       },
     } satisfies FormSchema;
 
-    const { result } = renderHook(
-      () =>
-        useForm(schema, {
-          defaultValues: {
-            width: 0,
-          },
-        }),
-      {
-        wrapper: RecoilRoot,
-      },
+    const { result } = renderHook(() =>
+      useForm(schema, {
+        defaultValues: {
+          width: 0,
+        },
+      }),
     );
 
     expect(result.current.errors.width.message).toEqual(
@@ -215,11 +190,7 @@ describe('useForm with DOM', () => {
       return <input role="textbox" {...register('width')} type="number" />;
     };
 
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
@@ -255,11 +226,7 @@ describe('useForm with DOM', () => {
       );
     };
 
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
@@ -296,11 +263,7 @@ describe('useForm with DOM', () => {
       );
     };
 
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
@@ -341,11 +304,7 @@ describe('useForm with DOM', () => {
       );
     };
 
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
@@ -369,11 +328,7 @@ describe('useForm with DOM', () => {
       return <input role="textbox" {...register('width')} />;
     };
 
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
@@ -421,11 +376,7 @@ describe('useForm with DOM', () => {
       );
     };
 
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
@@ -459,11 +410,7 @@ describe('useForm with DOM', () => {
       );
     };
 
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
