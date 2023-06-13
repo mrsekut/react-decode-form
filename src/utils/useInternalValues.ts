@@ -1,5 +1,5 @@
-import { atomFamily, useRecoilState } from 'recoil';
 import { FormSchema, DefaultValues, FormValues } from '../types';
+import { useState } from 'react';
 
 /** @package */
 export const useInternalValues = <
@@ -8,10 +8,7 @@ export const useInternalValues = <
 >(
   defaultValues: D,
 ) => {
-  return useRecoilState<FormValues<Schema, D>>(createAtom(defaultValues));
+  return useState<FormValues<Schema, D>>(
+    defaultValues as FormValues<Schema, D>,
+  );
 };
-
-const createAtom = atomFamily({
-  key: 'form values',
-  default: values => values as any,
-});

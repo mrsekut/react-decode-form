@@ -12,7 +12,6 @@
   "keywords": [
     "typescript",
     "zod",
-    "recoil",
     "form",
     "form-validation",
     "react-hooks"
@@ -27,7 +26,6 @@
     "test": "vitest"
   },
   "dependencies": {
-    "recoil": "^0.7.7",
     "zod": "^3.21.4"
   },
   "peerDependencies": {

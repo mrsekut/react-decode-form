@@ -1,5 +1,4 @@
 import React from 'react';
-import { RecoilRoot } from 'recoil';
 import { Controller, useForm } from '.';
 import * as z from 'zod';
 import { vi, describe, test, expect } from 'vitest';
@@ -38,11 +37,7 @@ describe('Controller', () => {
     };
 
     const onChange = vi.fn();
-    render(
-      <RecoilRoot>
-        <App />
-      </RecoilRoot>,
-    );
+    render(<App />);
 
     const user = userEvent.setup();
 
