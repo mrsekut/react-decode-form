@@ -6,9 +6,6 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "packageManager": "npm@9.6.7",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "keywords": [
     "typescript",
     "zod",
